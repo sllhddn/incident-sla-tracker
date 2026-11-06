@@ -1,0 +1,41 @@
+### Works with the VS Code REST Client or JetBrains HTTP Client
+@base = http://localhost:8080
+
+### Health
+GET {{base}}/health
+
+### Plan and deploy a release
+POST {{base}}/api/releases
+Content-Type: application/json
+
+{ "version": "1.4.2", "scheduledAt": "2026-11-05T22:00:00+08:00", "notes": "Search index changes" }
+
+###
+POST {{base}}/api/releases/1.4.2/deploy
+
+### Open a P1 incident caused by that release
+POST {{base}}/api/incidents
+Content-Type: application/json
+
+{ "title": "Payment gateway rejects transactions", "service": "Payments", "severity": "P1", "openedBy": "service.desk", "causedByReleaseVersion": "1.4.2" }
+
+### Acknowledge (replace INC-1000 with the ref returned above)
+POST {{base}}/api/incidents/INC-1000/acknowledge
+Content-Type: application/json
+
+{ "by": "duty.engineer" }
+
+### Resolve
+POST {{base}}/api/incidents/INC-1000/resolve
+Content-Type: application/json
+
+{ "by": "duty.engineer", "summary": "Renewed the gateway client certificate" }
+
+### Open incidents past their resolve deadline
+GET {{base}}/api/incidents?breachingOnly=true
+
+### SLA compliance, last 30 days
+GET {{base}}/api/reports/sla
+
+### Change failure rate, last 180 days
+GET {{base}}/api/reports/change-failure-rate

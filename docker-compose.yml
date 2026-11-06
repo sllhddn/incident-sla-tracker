@@ -1,0 +1,22 @@
+# SQL Server 2022 + the API. Run: docker compose up --build, then open http://localhost:8080/openapi/v1.json
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: Local_Dev_Pass1      # local demo only
+      MSSQL_PID: Developer
+    ports: ["1433:1433"]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Local_Dev_Pass1 -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 12
+      start_period: 20s
+
+  api:
+    build: .
+    environment:
+      ConnectionStrings__Tracker: Server=sql,1433;Database=SlaTracker;User Id=sa;Password=Local_Dev_Pass1;TrustServerCertificate=True
+    depends_on:
+      sql: { condition: service_healthy }
+    ports: ["8080:8080"]
